@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+function convert_file () {
+	file=$(basename $1)
+	file="${file%.rst}"
+	dir="$2/${file}"
+	name="$dir/${file}.md"
+	meta_name="$dir/${file}.meta.json"
+
+	mkdir -p $dir
+	pandoc --filter ./filter.jq  --from rst --to markdown-header_attributes $1 | perl -p0e 's/::: {id=\"([^\"]*)\"}(.*?):::/<$1>\n$2\n<\/$1>/sg' | perl -p0e 's/images\//..\/assets\/images\//sg' > $name
+	echo "{
+	  \"title\": \"$file\",
+	  \"metaTitle\": \"$file\",
+	  \"sectionTitle\": \"$file\",
+	  \"shortDescription\": \"no description provided\",
+	  \"pageDescription\": \"no description provided\",
+	  \"metaDescription\": \"no description provided\",
+	  \"weight\": 1,
+	  \"uuid\": \"$(uuidgen)\"
+	}" | jq > $meta_name
+}
+
+function walk_dir () {
+	for pathname in $1/*; do
+		if [ -d "$pathname" ]; then
+			dirname=$(basename $pathname)
+			walk_dir "$pathname" "$2/$dirname"
+		elif [[ $pathname = *.rst ]]; then
+			convert_file $pathname $2
+		else
+			mkdir -p $2
+			cp -r $pathname $2
+		fi
+	done
+}
+
+if [ $# -lt 2 ]; then
+	echo "usage: $0 <in-dir> <out-dir>"
+	exit 1
+fi
+
+walk_dir $1 $2
+
