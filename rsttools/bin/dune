@@ -1,0 +1,4 @@
+(executable
+ (public_name rsttools)
+ (name main)
+ (libraries base rsttools str))
