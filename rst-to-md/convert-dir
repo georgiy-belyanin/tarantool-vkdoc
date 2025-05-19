@@ -8,7 +8,7 @@ convert_file () {
 	meta_name="$dir/${file}.meta.json"
 
 	mkdir -p "$dir"
-	pandoc --filter ./filter.jq  --from rst --to markdown-header_attributes "$1" | perl -p0e 's/::: {id=\"([^\"]*)\"}(.*?):::/<$1>\n$2\n<\/$1>/sg' | perl -p0e 's/images\//..\/assets\/images\//sg' > "$name"
+	pandoc --filter ./filter.jq  --from rst --to markdown-header_attributes "$1" | perl -p0e 's/::: {id=\"([^\"]*)\"}(.*?):::/<$1>\n$2\n<\/$1>/sg' | perl -p0e 's/images\//..\/assets\/images\//sg' | ../rsttools/_build/default/bin/main.exe substitute dict.txt > "$name"
 	echo "{
 	  \"title\": \"$file\",
 	  \"metaTitle\": \"$file\",
