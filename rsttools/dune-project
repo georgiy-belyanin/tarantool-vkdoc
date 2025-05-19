@@ -1,0 +1,23 @@
+(lang dune 3.18)
+
+(name rsttools)
+
+(generate_opam_files true)
+
+(source
+ (github georgiy-belyanin/tarantool-vkdocs))
+
+(authors "Georgiy Belyanin <belyaningeorge@ya.ru>")
+
+(maintainers "Georgiy Belyanin <belyaningeorge@ya.ru>")
+
+(package
+ (name rsttools)
+ (synopsis "Tools for working with RST documentation")
+ (description "Tools for working with RST documentation")
+ (depends
+  ocaml
+  dune
+  (ocamlformat :dev)))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/reference/dune-project/index.html
