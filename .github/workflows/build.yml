@@ -1,0 +1,35 @@
+name: Build on linux
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  check-scripts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shellcheck
+        uses: ludeeus/action-shellcheck@master
+
+  build-rsttools:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with: 
+          ocaml-compiler: 5
+
+      - name: Install depedencies
+        working-directory: ./rsttools
+        run: opam install . --deps-only --with-test
+
+      - name: Format
+        working-directory: ./rsttools
+        run: opam exec -- dune fmt
+
+      - name: Build
+        working-directory: ./rsttools
+        run: opam exec -- dune build @check @all

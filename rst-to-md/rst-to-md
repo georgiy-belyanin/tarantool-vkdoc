@@ -1,3 +1,0 @@
-#!/usr/bin/env sh
-
-pandoc --filter ./filter.jq --from rst --to markdown_strict $1
