@@ -22,8 +22,8 @@ convert_file () {
 	| perl -p0e 's/<warning>/\{note:warning\}/sg' \
 	| perl -p0e 's/<\/warning>/\{\/note\}/sg' \
 	| perl -p0e 's/<error>/\{note:error\}/sg' \
-	| perl -p0e 's/<\/error>/\{\/note\}/sg' \
-	| ../rsttools/_build/default/bin/main.exe substitute dict.txt > "$name"
+	| perl -p0e 's/<\/error>/\{\/note\}/sg' > "$name"
+	#| ../rsttools/_build/default/bin/main.exe substitute dict.txt > "$name"
 	pandoc --filter ./filter.jq  --from rst --to json "$1" | jq > "$name.json"
 
 	echo "{
