@@ -1,5 +1,7 @@
 #!/usr/bin/env sh
 
+set -uxo pipefail
+
 convert_file () {
 	file=$(basename "$1")
 	file="${file%.rst}"
@@ -7,10 +9,25 @@ convert_file () {
 	name="$dir/${file}.md"
 	meta_name="$dir/${file}.meta.json"
 
+	title=$(pandoc --filter ./grep-header.jq --from rst --to markdown "$1")
+	echo $dir $file $title
+	
+
 	mkdir -p "$dir"
-	pandoc --filter ./filter.jq  --from rst --to markdown-header_attributes "$1" | perl -p0e 's/::: {id=\"([^\"]*)\"}(.*?):::/<$1>\n$2\n<\/$1>/sg' | perl -p0e 's/images\//..\/assets\/images\//sg' | ../rsttools/_build/default/bin/main.exe substitute dict.txt > "$name"
+	pandoc --filter ./filter.jq  --from rst --to markdown-header_attributes "$1" \
+	| perl -p0e 's/::: {id=\"([^\"]*)\"}(.*?):::/<$1>\n$2\n<\/$1>/sg' \
+	| perl -p0e 's/images\//..\/assets\/images\//sg' \
+	| perl -p0e 's/<info>/\{note:info\}/sg' \
+	| perl -p0e 's/<\/info>/\{\/note\}/sg' \
+	| perl -p0e 's/<warning>/\{note:warning\}/sg' \
+	| perl -p0e 's/<\/warning>/\{\/note\}/sg' \
+	| perl -p0e 's/<error>/\{note:error\}/sg' \
+	| perl -p0e 's/<\/error>/\{\/note\}/sg' \
+	| ../rsttools/_build/default/bin/main.exe substitute dict.txt > "$name"
+	pandoc --filter ./filter.jq  --from rst --to json "$1" | jq > "$name.json"
+
 	echo "{
-	  \"title\": \"$file\",
+	  \"title\": \"$title\",
 	  \"metaTitle\": \"$file\",
 	  \"sectionTitle\": \"$file\",
 	  \"shortDescription\": \"no description provided\",
@@ -22,6 +39,15 @@ convert_file () {
 }
 
 walk_dir () {
+	file=$(basename "$1")
+	mkdir -p "$2"
+	meta_name="$2/${file}.meta.json"
+	echo "{
+	  \"title\": \"$file\",
+	  \"sectionTitle\": \"$file\",
+	  \"uuid\": \"$(uuidgen)\"
+	}" | jq > "$meta_name"
+
 	for pathname in "$1"/*; do
 		if [ -d "$pathname" ]; then
 			dirname=$(basename "$pathname")
